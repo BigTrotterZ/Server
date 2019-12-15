@@ -6,8 +6,8 @@
 #include "ProtocolsManager.h"
 
 initialiseSingleton(ZZLog);
-//initialiseSingleton(GameLogicManager);
-//initialiseSingleton(ProtocolsManager);
+initialiseSingleton(GameLogicManager);
+initialiseSingleton(ProtocolsManager);
 
 #define CreateLibSingleton( type ) \
   static  type the##type
@@ -15,8 +15,8 @@ initialiseSingleton(ZZLog);
 void CommonInitInterface()
 {
 	CreateLibSingleton(ZZLog);
-//	CreateLibSingleton(GameLogicManager);
-//	CreateLibSingleton(ProtocolsManager);
+	CreateLibSingleton(GameLogicManager);
+	CreateLibSingleton(ProtocolsManager);
 }
 
 #endif
