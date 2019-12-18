@@ -17,7 +17,7 @@ CC = g++
 CFLAGS = -std=c++11 -Wall
 
 $(BIN):$(OBJ) ./src/ServerMain.cpp
-	$(CC) $(<) -o $(BIN) $(INCLUDE) $(CFLAGS)
+	$(CC) $(CFLAGS) $(^) -o $(@) $(INCLUDE)
 $(OBJ): %.o: %.cpp
 	$(CC) -c $(CFLAGS) $(<) -o $(@) $(INCLUDE)
 clean:
