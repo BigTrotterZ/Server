@@ -13,6 +13,7 @@
 
 #include "Common.h"
 #include "User.h"
+#include "ThreadPoolManager.h"
 
 class Server
 {
@@ -29,11 +30,12 @@ private:
 	// 广播消息给所有客户端
 	int SendBroadcastMessage(int clientfd);
 private:
-	struct sockaddr_in serverAddr;	// 服务器端的serverAddr信息
-	int listener;					// 创建监听的socket
-	int epfd;						// epoll_creat创建后的返回值
+	// struct sockaddr_in serverAddr;	// 服务器端的serverAddr信息
+	// int listener;					// 创建监听的socket
+	// int epfd;						// epoll_creat创建后的返回值
 	std::list<int> clients_list;	// 客户端列表
 	std::map<int, UserPtr> user_list;	// 用户列表
+	ThreadPoolManager * net_thread_pool_;
 };
 
 #endif

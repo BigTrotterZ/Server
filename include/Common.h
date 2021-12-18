@@ -48,7 +48,7 @@ template <typename T> std::string toString(const T & t)
 // 默认服务端IP地址
 #define SERVER_IP "192.168.0.113"
 // 默认服务端端口号
-#define SERVER_PORT 8740
+#define SERVER_PORT 35535
 
 // int epoll_create(int size)中的size
 // 为epoll支持的最大句柄数
@@ -71,22 +71,22 @@ template <typename T> std::string toString(const T & t)
 #define CAUTION "There is only one in the chat room!"
 
 // 注册新的fd到epollfd中
-// 参数enable_et表示是否启用ET模式，如果为true则启用，否则使用LT模式
-static void addfd(int epollfd, int fd, bool enable_et)
-{
-	struct epoll_event ev;
-	ev.data.fd = fd;
-	ev.events = EPOLLIN;
-	if(enable_et)
-		ev.events = EPOLLIN | EPOLLET;
-	epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
-	// 设置socket为非阻塞模式
-	// 套接字立即放回，不管I/O是否完成，该函数所在的线程会继续运行
+// // 参数enable_et表示是否启用ET模式，如果为true则启用，否则使用LT模式
+// static void addfd(int epollfd, int fd, bool enable_et)
+// {
+// 	struct epoll_event ev;
+// 	ev.data.fd = fd;
+// 	ev.events = EPOLLIN;
+// 	if(enable_et)
+// 		ev.events = EPOLLIN | EPOLLET;
+// 	epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
+// 	// 设置socket为非阻塞模式
+// 	// 套接字立即放回，不管I/O是否完成，该函数所在的线程会继续运行
 
-	//eg.在recv(fd...)时，该函数立即返回，在返回时，内核数据还没准备好会返回WSAEWOULDBLOCK错误代码
-	fcntl(fd, F_SETFL, fcntl(fd, F_GETFD, 0) | O_NONBLOCK);
-    Log.Success(__FUNC_HEAD__,"fd[%d] added to epoll!\n", fd);
-}
+// 	//eg.在recv(fd...)时，该函数立即返回，在返回时，内核数据还没准备好会返回WSAEWOULDBLOCK错误代码
+// 	fcntl(fd, F_SETFL, fcntl(fd, F_GETFD, 0) | O_NONBLOCK);
+//     Log.Success(__FUNC_HEAD__,"fd[%d] added to epoll!\n", fd);
+// }
 
 struct Msg
 {

@@ -99,9 +99,9 @@ public:
 
 	ByteBuffer & operator << (const std::string & value) 
 	{
-		EnsureBufferSize(value.length() + 1);
+		EnsureBufferSize(value.length() + 2);
 		memcpy(&m_buffer[m_writePos], value.c_str(), value.length()+1);
-		m_writePos += (value.length() + 1);
+		m_writePos += (value.length() + 2);
 		return *this;
 	}
 
@@ -109,7 +109,9 @@ public:
 	{
 		dest.clear();
 		char c;
-		for(;;)
+		uint16 str_len;
+		*this >> str_len;
+		while(str_len--)
 		{
 			c = Read<char>();
 			if(c == 0) break;

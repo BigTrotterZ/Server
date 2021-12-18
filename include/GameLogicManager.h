@@ -1,5 +1,5 @@
-#ifndef _GAMELOGIC_MSNSGER_H_
-#define _GAMELOGIC_MSNSGER_H_
+#ifndef _GAMELOGIC_MANAGER_H_
+#define _GAMELOGIC_MANAGER_H_
 
 #include "User.h"
 #include "WorldPacket.h"

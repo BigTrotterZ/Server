@@ -2,79 +2,48 @@
 #include <iostream>
 
 #include "Server.h"
+#include "NetManager.h"
+#include "ProtocolsManager.h"
+
 // 服务端类成员函数
 
 // 服务端类构造函数
 Server::Server()
 {
-	// 初始化服务器地址和端口
-	serverAddr.sin_family = PF_INET;
-	serverAddr.sin_port = htons(SERVER_PORT);
-	serverAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
+	// // 初始化服务器地址和端口
+	// bzero(&serverAddr, sizeof(serverAddr));
+	// serverAddr.sin_family = AF_INET;
+	// serverAddr.sin_port = htons(SERVER_PORT);
+	// serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	// 初始化socket
-	listener = 0;
-	// epoll fd
-	epfd = 0;
+	// // 初始化socket
+	// listener = 0;
+	// // epoll fd
+	// epfd = 0;
+	sNetMgr.Init();
+	net_thread_pool_ = new ThreadPoolManager(5);
+	// net_thread_pool_(5);
 }
 
 // 初始化服务器并启动监听
 void Server::InitServer()
 {
-	Log.Debug(__FUNC_HEAD__, "Init Server ...");
+	sNetMgr.StartListen();
+	net_thread_pool_->Start();
 
-	// 创建监听socket
-	listener = socket(PF_INET, SOCK_STREAM, 0);
-	if(listener < 0)
-	{
-		Log.Error(__FUNC_HEAD__, "listener");
-		exit(-1);
-	}
-
-	// 避免重复绑定不成功
-	int on = 1;
-	if ((setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
-	{
-		Log.Error(__FUNC_HEAD__, "setsockopt faild!");
-	}
-
-	// 绑定地址
-	if(bind(listener, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
-	{
-		Log.Error(__FUNC_HEAD__, "bind error");
-		exit(-1);
-	}
-
-	// 监听
-	int ret = listen(listener, 5);
-	if(ret < 0)
-	{
-		Log.Error(__FUNC_HEAD__, "listen error");
-		exit(-1);
-	}
-
-	Log.Notice(__FUNC_HEAD__, "Start to listen: %s:%u", SERVER_IP, SERVER_PORT);
-
-	// 在内核中创建时间表epfd是一个句柄
-	epfd = epoll_create(EPOLL_SIZE);
-	if(epfd < 0)
-	{
-		Log.Error(__FUNC_HEAD__, "epfd error");
-		exit(-1);
-	}
-
-	// 往事件表里添加监听事件
-	addfd(epfd, listener, true);
+	sProtocolsMgr.RegistProtocol(0x0300, DealProtocol);
 }
 
 // 关闭服务
 void Server::CloseServer()
 {
+	net_thread_pool_->Stop();
+	delete net_thread_pool_;
 	// 关闭socket
-	close(listener);
+	// close(listener);
 
 	// 关闭epoll监听
-	close(epfd);
+	// close(epfd);
 }
 
 // 发送广播消息给所有客户端
@@ -192,69 +161,21 @@ int Server::SendBroadcastMessage(int clientfd)
 //启动服务端
 void Server::StartServer()
 {
-	// epoll 事件队列
-	static struct epoll_event events[EPOLL_SIZE];
+	
+	// struct epoll_event ev;
 	// 初始化服务端
 	InitServer();
 	// 主循环
-	while(true)
-	{
-		// epoll_events_count 表示就绪事件的数目
-		int epoll_events_count = epoll_wait(epfd, events, EPOLL_SIZE, -1);
-		if(epoll_events_count < 0)
-		{
-			Log.Error(__FUNC_HEAD__, "epoll failure!");
-			break;
-		}
+	// sNetMgr.Loop();
+	net_thread_pool_->SendMessage("__net_work__");
+	net_thread_pool_->SendMessage("__net_work__");
+	net_thread_pool_->SendMessage("__net_work__");
+	net_thread_pool_->SendMessage("__net_work__");
+	net_thread_pool_->SendMessage("__net_work__");
 
-		Log.Debug(__FUNC_HEAD__, "epoll_events_count[%d]", epoll_events_count);
-		for(int i = 0; i < epoll_events_count; ++i)
-		{
-			int sockfd = events[i].data.fd;
-
-			// 新用户连接
-			if(sockfd == listener)
-			{
-				struct sockaddr_in client_address;
-				socklen_t client_addrLength = sizeof(struct sockaddr_in);
-				int clientfd = accept(listener, (struct sockaddr *)&client_address, &client_addrLength);
-				Log.Notice(__FUNC_HEAD__, "client connection from: %s:%u, clientfd[%d]", 
-					inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port), clientfd);
-				// std::cout << ntohs(client_address.sin_port) << std::endl;
-				addfd(epfd, clientfd, true);
-
-				// 服务端用list保存用户连接
-				clients_list.push_back(clientfd);
-				Log.Notice(__FUNC_HEAD__, "Add new clientfd[%d] to epoll", clientfd);
-				Log.Notice(__FUNC_HEAD__, "Now there are [%d] clients", clients_list.size());
-
-				// 服务端发送欢迎信息
-				Log.Debug(__FUNC_HEAD__, "welcome message");
-				// 向客户端发送登录成功信息
-				char message[BUF_SIZE];
-				bzero(message, BUF_SIZE);
-				sprintf(message, SERVER_WELCOME_STR, clientfd);
-				int ret = send(clientfd, message, BUF_SIZE, 0);
-				if(ret < 0)
-				{
-					Log.Error(__FUNC_HEAD__, "send error");
-					CloseServer();
-					exit(-1);
-				}
-			}
-			else 	// 处理用户发来的信息，并广播，使其他用户收到信息
-			{
-				int ret = SendBroadcastMessage(sockfd);
-				if(ret < 0)
-				{
-					Log.Error(__FUNC_HEAD__, "broadcast error!");
-					CloseServer();
-					exit(-1);
-				}
-			}
-		}
-	}
-
+	Log_Debug("gamge logic...");
+	while(true);
+	Log_Debug("close server!");
 	// 关闭服务
 	CloseServer();
 }
