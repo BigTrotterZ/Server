@@ -8,7 +8,7 @@
 
 // g++ -g -o0 -I/usr/local/include -I/usr/local/boost/include -c main.cpp -o main.o
 // g++ -g -o0 -L/usr/lib -L/usr/local/mysql/lib main.o -o test -lmysqlcppconn
-
+// test
 // g++ -o test_mysql $(mysql_config --cflags) main.cpp $(mysql_config --libs) -lmysqlcppconn
 int main(int argc, char const *argv[])
 {
